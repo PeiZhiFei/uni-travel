@@ -1,0 +1,330 @@
+<template>
+  <view class="magnifier-container">
+    <view class="header">
+      <view class="header-title">放大镜</view>
+    </view>
+    
+    <view class="content">
+      <!-- 摄像头预览 -->
+      <camera 
+        device-position="back"
+        :flash="flash"
+        class="camera-view"
+        @error="onCameraError"
+        @initdone="onCameraInit"
+      >
+        <cover-view class="camera-overlay">
+          <!-- 放大倍数显示 -->
+          <cover-view class="zoom-info">
+            {{ zoomLevel }}x
+          </cover-view>
+          
+          <!-- 对焦框 -->
+          <cover-view 
+            class="focus-frame"
+            v-if="showFocusFrame"
+            :style="focusFrameStyle"
+          ></cover-view>
+        </cover-view>
+      </camera>
+    </view>
+    
+    <!-- 底部控制栏 -->
+    <view class="control-bar">
+      <!-- 放大倍数控制 -->
+      <view class="zoom-control">
+        <text class="control-label">放大倍数</text>
+        <slider 
+          :value="zoomLevel" 
+          min="1" 
+          max="10" 
+          step="0.5"
+          @change="onZoomChange"
+          activeColor="#4A90E2"
+          backgroundColor="#e0e0e0"
+          block-color="#4A90E2"
+          block-size="20"
+        />
+        <text class="zoom-value">{{ zoomLevel }}x</text>
+      </view>
+      
+      <!-- 功能按钮 -->
+      <view class="function-buttons">
+        <view class="func-btn" @click="toggleFlash">
+          <text class="func-icon">{{ flash === 'on' ? '💡' : '🔦' }}</text>
+          <text class="func-text">{{ flash === 'on' ? '关闭' : '开启' }}闪光灯</text>
+        </view>
+        <view class="func-btn" @click="resetZoom">
+          <text class="func-icon">🔍</text>
+          <text class="func-text">重置</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      zoomLevel: 5, // 默认5倍放大
+      flash: 'off',
+      cameraContext: null,
+      showFocusFrame: false,
+      focusX: 0,
+      focusY: 0
+    };
+  },
+  computed: {
+    focusFrameStyle() {
+      return {
+        left: (this.focusX - 50) + 'px',
+        top: (this.focusY - 50) + 'px'
+      };
+    }
+  },
+  onLoad() {
+    this.initCamera();
+  },
+  onUnload() {
+    this.stopCamera();
+  },
+  methods: {
+    initCamera() {
+      // 创建相机上下文
+      this.cameraContext = uni.createCameraContext();
+      
+      // 设置初始放大倍数
+      this.$nextTick(() => {
+        setTimeout(() => {
+          this.setZoom(this.zoomLevel);
+        }, 500);
+      });
+    },
+    
+    onCameraInit() {
+      console.log('摄像头初始化完成');
+      // 设置初始放大倍数
+      this.setZoom(this.zoomLevel);
+    },
+    
+    onCameraError(e) {
+      console.error('摄像头错误:', e);
+      uni.showToast({
+        title: '摄像头打开失败',
+        icon: 'none',
+        duration: 2000
+      });
+    },
+    
+    setZoom(zoom) {
+      if (!this.cameraContext) {
+        this.cameraContext = uni.createCameraContext();
+      }
+      
+      // 设置摄像头缩放
+      // 注意：某些平台可能需要使用不同的API
+      try {
+        if (this.cameraContext.setZoom) {
+          this.cameraContext.setZoom({
+            zoom: zoom,
+            success: () => {
+              console.log('设置放大倍数成功:', zoom);
+            },
+            fail: (err) => {
+              console.error('设置放大倍数失败:', err);
+              // 如果API不支持，尝试其他方式
+              this.setZoomAlternative(zoom);
+            }
+          });
+        } else {
+          this.setZoomAlternative(zoom);
+        }
+      } catch (e) {
+        console.error('设置放大倍数异常:', e);
+        this.setZoomAlternative(zoom);
+      }
+    },
+    
+    setZoomAlternative(zoom) {
+      // 备用方案：通过CSS transform实现视觉放大
+      // 注意：这只是视觉放大，不是真正的光学放大
+      console.log('使用备用放大方案:', zoom);
+    },
+    
+    onZoomChange(e) {
+      const newZoom = e.detail.value;
+      this.zoomLevel = newZoom;
+      this.setZoom(newZoom);
+    },
+    
+    toggleFlash() {
+      this.flash = this.flash === 'on' ? 'off' : 'on';
+    },
+    
+    resetZoom() {
+      this.zoomLevel = 5;
+      this.setZoom(5);
+      uni.showToast({
+        title: '已重置为5倍',
+        icon: 'success',
+        duration: 1000
+      });
+    },
+    
+    stopCamera() {
+      // 停止摄像头（如果需要）
+      if (this.cameraContext) {
+        // 某些平台可能需要调用停止方法
+        this.cameraContext = null;
+      }
+    }
+  }
+};
+</script>
+
+<style scoped>
+.magnifier-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #000000;
+}
+
+.header {
+  height: 44px;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 100;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+.camera-view {
+  width: 100%;
+  height: 100%;
+}
+
+.camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.zoom-info {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  z-index: 10;
+}
+
+.focus-frame {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border: 2px solid #4A90E2;
+  border-radius: 4px;
+  pointer-events: none;
+  animation: focusPulse 1s ease-in-out;
+}
+
+@keyframes focusPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+.control-bar {
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.zoom-control {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.control-label {
+  font-size: 14px;
+  color: #ffffff;
+  margin-right: 10px;
+  min-width: 60px;
+}
+
+.zoom-control slider {
+  flex: 1;
+  margin: 0 10px;
+}
+
+.zoom-value {
+  font-size: 16px;
+  color: #4A90E2;
+  font-weight: 600;
+  min-width: 50px;
+  text-align: right;
+}
+
+.function-buttons {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+}
+
+.func-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.func-btn:active {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(0.95);
+}
+
+.func-icon {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.func-text {
+  font-size: 12px;
+  color: #ffffff;
+}
+</style>

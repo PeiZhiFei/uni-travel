@@ -6,6 +6,14 @@
           <text class="mindmap-button-icon">🧠</text>
           <text class="mindmap-button-text">思维导图</text>
         </view>
+        <view class="mindmap-button" @click="goToMagnifier">
+          <text class="mindmap-button-icon">🔍</text>
+          <text class="mindmap-button-text">放大镜</text>
+        </view>
+        <view class="mindmap-button" @click="goToFlashlight">
+          <text class="mindmap-button-icon">🔦</text>
+          <text class="mindmap-button-text">手电筒</text>
+        </view>
       </view>
       
       <view class="scroll-wrapper">
@@ -298,6 +306,28 @@ export default {
         }
       });
     },
+    goToMagnifier() {
+      uni.navigateTo({
+        url: '/pages/magnifier/magnifier',
+        success: function (res) {
+          console.log('跳转到放大镜成功');
+        },
+        fail: function (err) {
+          console.error('跳转失败:', err);
+        }
+      });
+    },
+    goToFlashlight() {
+      uni.navigateTo({
+        url: '/pages/flashlight/flashlight',
+        success: function (res) {
+          console.log('跳转到手电筒成功');
+        },
+        fail: function (err) {
+          console.error('跳转失败:', err);
+        }
+      });
+    },
   }
 }
 </script>
@@ -410,10 +440,13 @@ view::-webkit-scrollbar {
   padding: 15px;
   background-color: #ffffff;
   margin-bottom: 5px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
 }
 
 .mindmap-button {
-  width: 100%;
+  flex: 1;
   height: 60px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
@@ -421,7 +454,7 @@ view::-webkit-scrollbar {
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  flex-direction: row;
+  flex-direction: column;
 }
 
 .mindmap-button:active {
@@ -430,12 +463,12 @@ view::-webkit-scrollbar {
 }
 
 .mindmap-button-icon {
-  font-size: 28px;
-  margin-right: 10px;
+  font-size: 24px;
+  margin-bottom: 4px;
 }
 
 .mindmap-button-text {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
   color: #ffffff;
 }

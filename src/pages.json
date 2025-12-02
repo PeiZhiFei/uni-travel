@@ -41,6 +41,18 @@
 			"style": {
 				"navigationBarTitleText": "思维导图"
 			}
+		},
+		{
+			"path": "pages/magnifier/magnifier",
+			"style": {
+				"navigationBarTitleText": "放大镜"
+			}
+		},
+		{
+			"path": "pages/flashlight/flashlight",
+			"style": {
+				"navigationBarTitleText": "手电筒"
+			}
 		}
 	],
 	"globalStyle": {
