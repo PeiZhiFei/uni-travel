@@ -35,6 +35,12 @@
 			"style": {
 				"navigationBarTitleText": "图片"
 			}
+		},
+		{
+			"path": "pages/mindmap/mindmap",
+			"style": {
+				"navigationBarTitleText": "思维导图"
+			}
 		}
 	],
 	"globalStyle": {

@@ -1,6 +1,13 @@
 <template>
   <scroll-view :scroll-top="scrollTop" scroll-with-animation="true" :show-scrollbar="false" style="height:100vh;overflow: hidden;" scroll-y="true">
     <view class="container">
+      <view class="mindmap-button-wrapper">
+        <view class="mindmap-button" @click="goToMindmap">
+          <text class="mindmap-button-icon">🧠</text>
+          <text class="mindmap-button-text">思维导图</text>
+        </view>
+      </view>
+      
       <view class="scroll-wrapper">
         <text class="title title2" style="margin-top: 5px;">抢票公众号</text>
         <scroll-view class="scrollable-container" scroll-x="true" scroll-left="0" enable-flex="true">
@@ -58,6 +65,14 @@
             <view class="content-wrapper">
               <image mode="aspectFill" class="image-content has-shadow" :src="noNet ? '' : item.img" @click.stop="goToBooking2(item.officalId)" :lazy-load="true"></image>
               <text class="text-content">{{item.name}}</text>
+            </view>
+          </view>
+          <view class="scrollable-item">
+            <view class="content-wrapper" @click="goToMindmap">
+              <view class="mindmap-icon">
+                <text class="mindmap-icon-text">🧠</text>
+              </view>
+              <text class="text-content">思维导图</text>
             </view>
           </view>
         </scroll-view>
@@ -272,6 +287,17 @@ export default {
         }
       });
     },
+    goToMindmap() {
+      uni.navigateTo({
+        url: '/pages/mindmap/mindmap',
+        success: function (res) {
+          console.log('跳转到思维导图成功');
+        },
+        fail: function (err) {
+          console.error('跳转失败:', err);
+        }
+      });
+    },
   }
 }
 </script>
@@ -378,5 +404,54 @@ view::-webkit-scrollbar {
   text-overflow: ellipsis;
   max-width: 100%;
   margin-top: 2px;
+}
+
+.mindmap-button-wrapper {
+  padding: 15px;
+  background-color: #ffffff;
+  margin-bottom: 5px;
+}
+
+.mindmap-button {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  flex-direction: row;
+}
+
+.mindmap-button:active {
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.mindmap-button-icon {
+  font-size: 28px;
+  margin-right: 10px;
+}
+
+.mindmap-button-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.mindmap-icon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.mindmap-icon-text {
+  font-size: 40px;
 }
 </style>
