@@ -7,9 +7,11 @@
     <view class="content">
       <!-- 摄像头预览 -->
       <camera 
+        id="magnifierCamera"
         device-position="back"
         :flash="flash"
         class="camera-view"
+        :style="cameraStyle"
         @error="onCameraError"
         @initdone="onCameraInit"
       >
@@ -18,13 +20,6 @@
           <cover-view class="zoom-info">
             {{ zoomLevel }}x
           </cover-view>
-          
-          <!-- 对焦框 -->
-          <cover-view 
-            class="focus-frame"
-            v-if="showFocusFrame"
-            :style="focusFrameStyle"
-          ></cover-view>
         </cover-view>
       </camera>
     </view>
@@ -69,17 +64,20 @@ export default {
     return {
       zoomLevel: 5, // 默认5倍放大
       flash: 'off',
-      cameraContext: null,
-      showFocusFrame: false,
-      focusX: 0,
-      focusY: 0
+      cameraContext: null
     };
   },
   computed: {
-    focusFrameStyle() {
+    cameraStyle() {
+      // 通过CSS transform实现视觉放大
+      const scale = this.zoomLevel;
       return {
-        left: (this.focusX - 50) + 'px',
-        top: (this.focusY - 50) + 'px'
+        transform: `scale(${scale})`,
+        transformOrigin: 'center center',
+        width: `${100 / scale}%`,
+        height: `${100 / scale}%`,
+        marginLeft: `${(scale - 1) * 50}%`,
+        marginTop: `${(scale - 1) * 50}%`
       };
     }
   },
@@ -92,64 +90,56 @@ export default {
   methods: {
     initCamera() {
       // 创建相机上下文
-      this.cameraContext = uni.createCameraContext();
+      this.cameraContext = uni.createCameraContext('magnifierCamera', this);
       
-      // 设置初始放大倍数
+      // 尝试设置初始放大倍数（如果API支持）
       this.$nextTick(() => {
         setTimeout(() => {
           this.setZoom(this.zoomLevel);
-        }, 500);
+        }, 1000);
       });
     },
     
     onCameraInit() {
       console.log('摄像头初始化完成');
       // 设置初始放大倍数
-      this.setZoom(this.zoomLevel);
+      setTimeout(() => {
+        this.setZoom(this.zoomLevel);
+      }, 500);
     },
     
     onCameraError(e) {
       console.error('摄像头错误:', e);
-      uni.showToast({
-        title: '摄像头打开失败',
-        icon: 'none',
-        duration: 2000
+      uni.showModal({
+        title: '提示',
+        content: '摄像头打开失败，请检查相机权限',
+        showCancel: false
       });
     },
     
     setZoom(zoom) {
       if (!this.cameraContext) {
-        this.cameraContext = uni.createCameraContext();
+        this.cameraContext = uni.createCameraContext('magnifierCamera', this);
       }
       
-      // 设置摄像头缩放
-      // 注意：某些平台可能需要使用不同的API
+      // 尝试使用API设置缩放（如果支持）
       try {
-        if (this.cameraContext.setZoom) {
+        if (this.cameraContext && this.cameraContext.setZoom) {
           this.cameraContext.setZoom({
             zoom: zoom,
             success: () => {
               console.log('设置放大倍数成功:', zoom);
             },
             fail: (err) => {
-              console.error('设置放大倍数失败:', err);
-              // 如果API不支持，尝试其他方式
-              this.setZoomAlternative(zoom);
+              console.log('API不支持缩放，使用CSS放大:', err);
+              // 如果API不支持，使用CSS transform（已在computed中实现）
             }
           });
-        } else {
-          this.setZoomAlternative(zoom);
         }
       } catch (e) {
-        console.error('设置放大倍数异常:', e);
-        this.setZoomAlternative(zoom);
+        console.log('设置放大倍数异常，使用CSS放大:', e);
+        // 使用CSS transform（已在computed中实现）
       }
-    },
-    
-    setZoomAlternative(zoom) {
-      // 备用方案：通过CSS transform实现视觉放大
-      // 注意：这只是视觉放大，不是真正的光学放大
-      console.log('使用备用放大方案:', zoom);
     },
     
     onZoomChange(e) {
@@ -173,9 +163,8 @@ export default {
     },
     
     stopCamera() {
-      // 停止摄像头（如果需要）
+      // 停止摄像头
       if (this.cameraContext) {
-        // 某些平台可能需要调用停止方法
         this.cameraContext = null;
       }
     }
@@ -190,6 +179,7 @@ export default {
   display: flex;
   flex-direction: column;
   background-color: #000000;
+  overflow: hidden;
 }
 
 .header {
@@ -218,6 +208,9 @@ export default {
 .camera-view {
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .camera-overlay {
@@ -227,6 +220,7 @@ export default {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 10;
 }
 
 .zoom-info {
@@ -239,28 +233,6 @@ export default {
   border-radius: 20px;
   font-size: 16px;
   font-weight: 600;
-  z-index: 10;
-}
-
-.focus-frame {
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  border: 2px solid #4A90E2;
-  border-radius: 4px;
-  pointer-events: none;
-  animation: focusPulse 1s ease-in-out;
-}
-
-@keyframes focusPulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.1);
-  }
 }
 
 .control-bar {

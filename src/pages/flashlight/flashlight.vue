@@ -5,6 +5,16 @@
     </view>
     
     <view class="content">
+      <!-- 隐藏的摄像头用于控制闪光灯 -->
+      <camera 
+        id="flashlightCamera"
+        device-position="back"
+        :flash="flash"
+        class="hidden-camera"
+        @error="onCameraError"
+        @initdone="onCameraInit"
+      ></camera>
+      
       <!-- 手电筒图标区域 -->
       <view class="flashlight-icon-wrapper">
         <view 
@@ -90,7 +100,8 @@ export default {
       brightness: 100,
       flashMode: 'normal', // normal, slow, fast
       flashTimer: null,
-      cameraContext: null
+      cameraContext: null,
+      flash: 'off'
     };
   },
   onLoad() {
@@ -108,13 +119,30 @@ export default {
   methods: {
     initCamera() {
       // 创建相机上下文
-      this.cameraContext = uni.createCameraContext();
+      this.cameraContext = uni.createCameraContext('flashlightCamera', this);
       
       // 自动打开手电筒
       this.$nextTick(() => {
         setTimeout(() => {
           this.turnOnFlashlight();
         }, 500);
+      });
+    },
+    
+    onCameraInit() {
+      console.log('摄像头初始化完成');
+      // 自动打开手电筒
+      setTimeout(() => {
+        this.turnOnFlashlight();
+      }, 300);
+    },
+    
+    onCameraError(e) {
+      console.error('摄像头错误:', e);
+      uni.showModal({
+        title: '提示',
+        content: '摄像头打开失败，请检查相机权限',
+        showCancel: false
       });
     },
     
@@ -127,62 +155,38 @@ export default {
     },
     
     turnOnFlashlight() {
-      if (!this.cameraContext) {
-        this.cameraContext = uni.createCameraContext();
-      }
+      // 通过camera组件的flash属性控制闪光灯
+      this.flash = 'on';
+      this.isOn = true;
+      this.startFlashMode();
       
-      // 使用相机 API 打开闪光灯
-      // 注意：在某些平台上可能需要先打开相机预览
-      try {
-        // 尝试直接设置闪光灯状态
-        if (uni.setFlashlightState) {
-          uni.setFlashlightState({
-            state: true,
-            success: () => {
-              this.isOn = true;
-              this.startFlashMode();
-            },
-            fail: (err) => {
-              console.error('打开手电筒失败:', err);
-              // 如果直接设置失败，尝试使用相机方式
-              this.turnOnViaCamera();
-            }
-          });
-        } else {
-          // 如果不支持直接设置，使用相机方式
-          this.turnOnViaCamera();
+      // 尝试使用API（如果支持）
+      if (this.cameraContext) {
+        try {
+          // 某些平台可能需要通过其他方式控制
+          if (uni.setFlashlightState) {
+            uni.setFlashlightState({
+              state: true,
+              success: () => {
+                console.log('手电筒已开启');
+              },
+              fail: (err) => {
+                console.log('使用camera组件控制闪光灯:', err);
+              }
+            });
+          }
+        } catch (e) {
+          console.log('使用camera组件控制闪光灯:', e);
         }
-      } catch (e) {
-        console.error('打开手电筒异常:', e);
-        this.turnOnViaCamera();
       }
-    },
-    
-    turnOnViaCamera() {
-      // 通过相机 API 打开闪光灯
-      // 在某些平台上，需要先打开相机预览才能使用闪光灯
-      uni.showToast({
-        title: '正在打开手电筒...',
-        icon: 'loading',
-        duration: 1000
-      });
-      
-      // 模拟打开（实际实现可能需要相机预览）
-      setTimeout(() => {
-        this.isOn = true;
-        this.startFlashMode();
-        uni.showToast({
-          title: '手电筒已开启',
-          icon: 'success',
-          duration: 1000
-        });
-      }, 500);
     },
     
     turnOffFlashlight() {
+      this.flash = 'off';
       this.isOn = false;
       this.stopFlashMode();
       
+      // 尝试使用API关闭（如果支持）
       if (this.cameraContext) {
         try {
           if (uni.setFlashlightState) {
@@ -192,12 +196,12 @@ export default {
                 console.log('手电筒已关闭');
               },
               fail: (err) => {
-                console.error('关闭手电筒失败:', err);
+                console.log('使用camera组件控制闪光灯:', err);
               }
             });
           }
         } catch (e) {
-          console.error('关闭手电筒异常:', e);
+          console.log('使用camera组件控制闪光灯:', e);
         }
       }
     },
@@ -220,7 +224,8 @@ export default {
       this.stopFlashMode();
       
       if (this.flashMode === 'normal') {
-        // 常亮模式，不需要闪烁
+        // 常亮模式，保持开启
+        this.flash = 'on';
         return;
       }
       
@@ -235,7 +240,10 @@ export default {
         let flashState = true;
         this.flashTimer = setInterval(() => {
           flashState = !flashState;
-          if (this.cameraContext && uni.setFlashlightState) {
+          this.flash = flashState ? 'on' : 'off';
+          
+          // 如果API支持，也调用API
+          if (uni.setFlashlightState) {
             uni.setFlashlightState({
               state: flashState,
               success: () => {
@@ -292,6 +300,16 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
+  position: relative;
+}
+
+.hidden-camera {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .flashlight-icon-wrapper {
