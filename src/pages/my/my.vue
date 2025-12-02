@@ -442,12 +442,14 @@ view::-webkit-scrollbar {
   margin-bottom: 5px;
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 15px;
+  justify-content: space-between;
 }
 
 .mindmap-button {
   flex: 1;
-  height: 60px;
+  min-width: 0;
+  height: 70px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
   display: flex;
@@ -455,6 +457,7 @@ view::-webkit-scrollbar {
   justify-content: center;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
   flex-direction: column;
+  padding: 8px 5px;
 }
 
 .mindmap-button:active {
@@ -463,14 +466,15 @@ view::-webkit-scrollbar {
 }
 
 .mindmap-button-icon {
-  font-size: 24px;
-  margin-bottom: 4px;
+  font-size: 28px;
+  margin-bottom: 6px;
 }
 
 .mindmap-button-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #ffffff;
+  white-space: nowrap;
 }
 
 .mindmap-icon {
