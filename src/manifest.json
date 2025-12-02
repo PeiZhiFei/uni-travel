@@ -11,13 +11,16 @@
         "nvueStyleCompiler" : "uni-app",
         "compilerVersion" : 3,
         "splashscreen" : {
-            "alwaysShowBeforeRender" : true,
-            "waiting" : true,
+            "alwaysShowBeforeRender" : false,
+            "waiting" : false,
             "autoclose" : true,
             "delay" : 0
         },
         /* 模块配置 */
-        "modules" : {},
+        "modules" : {
+            "Maps" : {},
+            "Webview-x5" : {}
+        },
         /* 应用发布信息 */
         "distribute" : {
             /* android打包配置 */
@@ -46,7 +49,23 @@
                 "dSYMs" : false
             },
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "maps" : {
+                    "amap" : {
+                        "name" : "谁谁谁",
+                        "appkey_ios" : "9708965fd9116a4a849e591b276f4b55",
+                        "appkey_android" : "9708965fd9116a4a849e591b276f4b55"
+                    }
+                }
+            },
+            "splashscreen" : {
+                "androidStyle" : "default",
+                "android" : {
+                    "hdpi" : "",
+                    "xhdpi" : "",
+                    "xxhdpi" : ""
+                }
+            }
         }
     },
     /* 快应用特有相关 */
@@ -56,7 +75,14 @@
         "router" : {
             "base" : "./"
         },
-        "title" : "UniTravel"
+        "title" : "UniTravel",
+        "sdkConfigs" : {
+            "maps" : {
+                "tencent" : {
+                    "key" : "3JRBZ-J42CL-VXDPL-MQ3QD-DAQOS-DRBF5"
+                }
+            }
+        }
     },
     /* 小程序特有相关 */
     "mp-weixin" : {

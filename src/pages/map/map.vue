@@ -1,67 +1,66 @@
 <template>
   <view class="map-container">
-    <scroll-view :show-scrollbar="false" :scroll-top="scrollTop" style="height: 100vh; overflow: hidden;" scroll-y="true">
-      <view class="full-screen-container">
-        <view class="search-container" v-if="showTop">
-          <view class="dropdown">
-            <view class="dropdown-header" style="background-color: rgb(128, 114, 247); height:21px;line-height:21px;" @click.stop="toggleSettingDropdown">地图设置</view>
-            <view v-if="showSettingDropdown" class="dropdown-menu">
-              <block v-for="(item, index) in setting" :key="index">
-                <view class="dropdown-item" @click.stop="selectSetting(index)" style="width: 60px;" :style="{color: selectedSetting == setting[index] ? '#f00' : '#262727'}">
-                  {{item}}
-                </view>
-              </block>
-            </view>
+    <view class="full-screen-container">
+      <view class="search-container" v-if="showTop">
+        <view class="dropdown">
+          <view class="dropdown-header" style="background-color: rgb(128, 114, 247); height:21px;line-height:21px;" @click.stop="toggleSettingDropdown">地图设置</view>
+          <view v-if="showSettingDropdown" class="dropdown-menu">
+            <block v-for="(item, index) in setting" :key="index">
+              <view class="dropdown-item" @click.stop="selectSetting(index)" style="width: 60px;" :style="{color: selectedSetting == setting[index] ? '#f00' : '#262727'}">
+                {{item}}
+              </view>
+            </block>
           </view>
-          <input placeholder="搜索地点" class="search-container-input" @input="onSearchInput" :value="inputValue" />
+        </view>
+        <input placeholder="搜索地点" class="search-container-input" @input="onSearchInput" :value="inputValue" />
 
-          <view class="dropdown">
-            <view class="dropdown-header" @click.stop="toggleTypeDropdown" style="height:21px;line-height:21px;">
-              {{sliceFirst(selectedName)}}
-            </view>
-            <view v-if="showTypeDropdown" class="dropdown-menu">
-              <block v-for="(item, index) in types" :key="index">
-                <view class="dropdown-item" @click.stop="selectType(index)" style="width: 60px;" :style="{color: types[index] == selectedName ? '#ff0000' : '#262727'}">
-                  {{sliceFirst(item)}}
-                </view>
-              </block>
-            </view>
+        <view class="dropdown">
+          <view class="dropdown-header" @click.stop="toggleTypeDropdown" style="height:21px;line-height:21px;">
+            {{sliceFirst(selectedName)}}
           </view>
-
-          <view v-if="showSearchResult" class="search-result">
-            <view v-for="(item, index) in searchResult" :key="index" class="result-item" @click="onResultItemTap(index)">
-              <image :src="item.img" mode="aspectFill" class="result-item-image has-shadow"></image>
-              <text class="result-item-text">{{item.title}}</text>
-            </view>
+          <view v-if="showTypeDropdown" class="dropdown-menu">
+            <block v-for="(item, index) in types" :key="index">
+              <view class="dropdown-item" @click.stop="selectType(index)" style="width: 60px;" :style="{color: types[index] == selectedName ? '#ff0000' : '#262727'}">
+                {{sliceFirst(item)}}
+              </view>
+            </block>
           </view>
         </view>
 
-        <canvas 
-          style="width: 60px; height: 45px; position: absolute; top: -100px; left: 0;" 
-          canvas-id="markerCanvas"
-        ></canvas>
+        <view v-if="showSearchResult" class="search-result">
+          <view v-for="(item, index) in searchResult" :key="index" class="result-item" @click="onResultItemTap(index)">
+            <image :src="item.img" mode="aspectFill" class="result-item-image has-shadow"></image>
+            <text class="result-item-text">{{item.title}}</text>
+          </view>
+        </view>
+      </view>
 
-        <map 
-          id="map" 
-          style="width: 100vw; height: 100vh;" 
-          :enable-3d="true" 
-          :enable-overlooking="true" 
-          :enable-auto-max-overlooking="true" 
-          :markers="items" 
-          @markertap="onMarkerTap" 
-          :enable-marker-clustering="true" 
-          :cluster-clickable="true"
-          @click="onMapTap" 
-          @callouttap="onMarkerTap" 
-          @regionchange="onRegionChange" 
-          :enable-poi="showPoi" 
-          :enable-building="true" 
-          :show-location="true" 
-          :scale="scale" 
-          :longitude="longitude2" 
-          :latitude="latitude2"
-        >
-        </map>
+      <canvas 
+        style="width: 60px; height: 45px; position: absolute; top: -100px; left: 0;" 
+        canvas-id="markerCanvas"
+      ></canvas>
+
+      <map 
+        id="map" 
+        class="map-component" 
+        :enable-3d="true" 
+        :enable-overlooking="true" 
+        :enable-auto-max-overlooking="true" 
+        :markers="items" 
+        @markertap="onMarkerTap" 
+        :enable-marker-clustering="true" 
+        :cluster-clickable="true"
+        @click="onMapTap" 
+        @callouttap="onMarkerTap" 
+        @regionchange="onRegionChange" 
+        :enable-poi="showPoi" 
+        :enable-building="true" 
+        :show-location="true" 
+        :scale="scale" 
+        :longitude="longitude2" 
+        :latitude="latitude2"
+      >
+      </map>
 
         <view class="video-popup" v-if="showVideoPopup">
           <view class="popup-mask" @click="closeVideoPopup"></view>
@@ -211,7 +210,6 @@
 
         <image class="back-to-top-btn" mode="aspectFill" @click="location" src="/static/images/b2.png" />
       </view>
-    </scroll-view>
   </view>
 </template>
 
@@ -1175,6 +1173,23 @@ export default {
 </script>
 
 <style scoped>
+/* Map container and component styles */
+.map-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-component {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
 /* Copy from map.wxss */
 .overlay-content3 {
   position: fixed;
@@ -1340,13 +1355,10 @@ export default {
 }
 
 .full-screen-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   width: 100vw;
   height: 100vh;
   position: relative;
+  overflow: hidden;
 }
 
 .container8 {
