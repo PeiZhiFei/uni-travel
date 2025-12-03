@@ -89,8 +89,20 @@ export default {
   },
   methods: {
     initCamera() {
+      // 检查API是否支持
+      if (typeof uni.createCameraContext !== 'function') {
+        console.warn('createCameraContext 不支持，使用CSS放大');
+        // 在H5环境下，camera组件可能也不支持，但CSS放大仍然可用
+        return;
+      }
+      
       // 创建相机上下文
-      this.cameraContext = uni.createCameraContext('magnifierCamera', this);
+      try {
+        this.cameraContext = uni.createCameraContext('magnifierCamera', this);
+      } catch (e) {
+        console.error('创建相机上下文失败:', e);
+        // 即使创建失败，CSS放大仍然可用
+      }
       
       // 尝试设置初始放大倍数（如果API支持）
       this.$nextTick(() => {
@@ -118,10 +130,6 @@ export default {
     },
     
     setZoom(zoom) {
-      if (!this.cameraContext) {
-        this.cameraContext = uni.createCameraContext('magnifierCamera', this);
-      }
-      
       // 尝试使用API设置缩放（如果支持）
       try {
         if (this.cameraContext && this.cameraContext.setZoom) {
@@ -135,6 +143,9 @@ export default {
               // 如果API不支持，使用CSS transform（已在computed中实现）
             }
           });
+        } else {
+          // 使用CSS transform（已在computed中实现）
+          console.log('使用CSS放大:', zoom);
         }
       } catch (e) {
         console.log('设置放大倍数异常，使用CSS放大:', e);

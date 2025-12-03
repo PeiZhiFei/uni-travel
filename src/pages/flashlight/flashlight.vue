@@ -118,8 +118,29 @@ export default {
   },
   methods: {
     initCamera() {
+      // 检查API是否支持
+      if (typeof uni.createCameraContext !== 'function') {
+        console.warn('createCameraContext 不支持');
+        uni.showModal({
+          title: '提示',
+          content: '手电筒功能在当前环境下不可用，请使用手机浏览器或小程序打开',
+          showCancel: false
+        });
+        return;
+      }
+      
       // 创建相机上下文
-      this.cameraContext = uni.createCameraContext('flashlightCamera', this);
+      try {
+        this.cameraContext = uni.createCameraContext('flashlightCamera', this);
+      } catch (e) {
+        console.error('创建相机上下文失败:', e);
+        uni.showModal({
+          title: '提示',
+          content: '无法初始化相机，请检查相机权限',
+          showCancel: false
+        });
+        return;
+      }
       
       // 自动打开手电筒
       this.$nextTick(() => {
@@ -161,20 +182,17 @@ export default {
       this.startFlashMode();
       
       // 尝试使用API（如果支持）
-      if (this.cameraContext) {
+      if (this.cameraContext && typeof uni.setFlashlightState === 'function') {
         try {
-          // 某些平台可能需要通过其他方式控制
-          if (uni.setFlashlightState) {
-            uni.setFlashlightState({
-              state: true,
-              success: () => {
-                console.log('手电筒已开启');
-              },
-              fail: (err) => {
-                console.log('使用camera组件控制闪光灯:', err);
-              }
-            });
-          }
+          uni.setFlashlightState({
+            state: true,
+            success: () => {
+              console.log('手电筒已开启');
+            },
+            fail: (err) => {
+              console.log('使用camera组件控制闪光灯:', err);
+            }
+          });
         } catch (e) {
           console.log('使用camera组件控制闪光灯:', e);
         }
@@ -187,19 +205,17 @@ export default {
       this.stopFlashMode();
       
       // 尝试使用API关闭（如果支持）
-      if (this.cameraContext) {
+      if (this.cameraContext && typeof uni.setFlashlightState === 'function') {
         try {
-          if (uni.setFlashlightState) {
-            uni.setFlashlightState({
-              state: false,
-              success: () => {
-                console.log('手电筒已关闭');
-              },
-              fail: (err) => {
-                console.log('使用camera组件控制闪光灯:', err);
-              }
-            });
-          }
+          uni.setFlashlightState({
+            state: false,
+            success: () => {
+              console.log('手电筒已关闭');
+            },
+            fail: (err) => {
+              console.log('使用camera组件控制闪光灯:', err);
+            }
+          });
         } catch (e) {
           console.log('使用camera组件控制闪光灯:', e);
         }
@@ -243,17 +259,21 @@ export default {
           this.flash = flashState ? 'on' : 'off';
           
           // 如果API支持，也调用API
-          if (uni.setFlashlightState) {
-            uni.setFlashlightState({
-              state: flashState,
-              success: () => {
-                // 闪烁成功
-              },
-              fail: () => {
-                // 闪烁失败，停止定时器
-                this.stopFlashMode();
-              }
-            });
+          if (typeof uni.setFlashlightState === 'function') {
+            try {
+              uni.setFlashlightState({
+                state: flashState,
+                success: () => {
+                  // 闪烁成功
+                },
+                fail: () => {
+                  // 闪烁失败，停止定时器
+                  this.stopFlashMode();
+                }
+              });
+            } catch (e) {
+              console.log('闪烁控制失败:', e);
+            }
           }
         }, interval);
       }
