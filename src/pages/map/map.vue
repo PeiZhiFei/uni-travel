@@ -378,10 +378,10 @@ export default {
     processReq() {
         const store = useGlobalStore();
         // Check time diff and clear cache if needed
-        if(this.checkTimeDifference()) {
-            this.clearMarkerCache();
-        }
-        this.circleIcon();
+        // if(this.checkTimeDifference()) {
+        //     this.clearMarkerCache();
+        // }
+        // this.circleIcon();
 
         const place = store.selectedPlace;
         const filterItem = store.filterItem;
@@ -1059,7 +1059,7 @@ export default {
     clearMarkerCache() {
         uni.removeStorageSync('markerCache');
         this.cachedData = {};
-        uni.showToast({ title: '缓存已清除', icon: 'success' });
+        // uni.showToast({ title: '缓存已清除', icon: 'success' });
     },
     circleIcon() {
         this.showSettingDropdown = false;

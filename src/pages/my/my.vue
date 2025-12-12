@@ -1,21 +1,8 @@
 <template>
   <scroll-view :scroll-top="scrollTop" scroll-with-animation="true" :show-scrollbar="false" style="height:100vh;overflow: hidden;" scroll-y="true">
     <view class="container">
-      <view class="mindmap-button-wrapper">
-        <view class="mindmap-button" @click="goToMindmap">
-          <text class="mindmap-button-icon">🧠</text>
-          <text class="mindmap-button-text">思维导图</text>
-        </view>
-        <view class="mindmap-button" @click="goToMagnifier">
-          <text class="mindmap-button-icon">🔍</text>
-          <text class="mindmap-button-text">放大镜</text>
-        </view>
-        <view class="mindmap-button" @click="goToFlashlight">
-          <text class="mindmap-button-icon">🔦</text>
-          <text class="mindmap-button-text">手电筒</text>
-        </view>
-      </view>
-      
+     
+ 
       <view class="scroll-wrapper">
         <text class="title title2" style="margin-top: 5px;">抢票公众号</text>
         <scroll-view class="scrollable-container" scroll-x="true" scroll-left="0" enable-flex="true">
